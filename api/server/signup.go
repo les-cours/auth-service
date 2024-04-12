@@ -6,14 +6,15 @@ import (
 	"github.com/les-cours/auth-service/api/auth"
 	"github.com/les-cours/auth-service/env"
 	"github.com/les-cours/auth-service/types"
+	"log"
 	"time"
 )
 
 func (s *Server) Signup(ctx context.Context, in *auth.SignUpRequest) (*auth.SignUpResponse, error) {
 
+	log.Println("id : ", in.AccountID)
 	token, err := s.GenerateAccessToken(ctx, &auth.GenerateAccessTokenRequest{
-		Username: in.UserName,
-		Password: in.Password,
+		AccountID: in.AccountID,
 	})
 	if err != nil {
 		return nil, err

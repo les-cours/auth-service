@@ -12,8 +12,7 @@ message VerifyTokenResponse {
 }
 
 message GenerateAccessTokenRequest {
-  string username = 1;
-  string password = 2;
+  string accountID = 1;
 }
 
 message GenerateAccessTokenResponse {
@@ -45,10 +44,8 @@ message AuthToken {
 }
 
 message SignUpRequest {
-  string userName  =1;
-  string password = 2;
-  string accountID = 3;
-  string email = 4;
+  string accountID = 1;
+  string email = 2;
 }
 
 

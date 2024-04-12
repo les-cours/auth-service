@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"database/sql"
+	"log"
+
 	"github.com/les-cours/auth-service/api/auth"
 	"github.com/les-cours/auth-service/api/users"
 	"github.com/les-cours/auth-service/utils"
@@ -30,16 +32,17 @@ func GetInstance(userClient users.UserServiceClient, db *sql.DB) *Server {
 
 func (s *Server) GenerateAccessToken(ctx context.Context, in *auth.GenerateAccessTokenRequest) (*auth.GenerateAccessTokenResponse, error) {
 
-	var validUser, err = s.userClient.GetUser(ctx, &users.GetUserRequest{
-		Username: in.Username,
-		Password: in.Password,
+	var validUser, err = s.userClient.GetUserByID(ctx, &users.GetUserByIDRequest{
+		AccountID: in.AccountID,
 	})
 	if err != nil {
+		log.Println("err server.go GenerateAccessToken",err)
 		return nil, err
 	}
 
 	token, err := utils.GenerateAccessToken(validUser)
 	if err != nil {
+		log.Println("err server.go utils.GenerateAccessToken ",err)
 		return nil, err
 	}
 
