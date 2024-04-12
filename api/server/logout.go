@@ -11,7 +11,8 @@ func (s *Server) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(types.Message{
-			Message: "HTTP Method not allowed",
+			Message:   "HTTP Method not allowed",
+			ErrorCode: 403,
 		})
 		return
 	}
@@ -24,6 +25,7 @@ func (s *Server) LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 	})
 	json.NewEncoder(w).Encode(types.Message{
-		Message: "logout successfuly",
+		Message:   "logout successfully",
+		ErrorCode: 403,
 	})
 }

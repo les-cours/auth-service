@@ -10,7 +10,7 @@ import (
 	"github.com/les-cours/auth-service/api/users"
 )
 
-func GenerateAccessToken(validUser *users.User) (*types.AuthToken, error) {
+func GenerateAccessToken(user *users.User) (*types.AuthToken, error) {
 	accessTokenExpiresAt := time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
 	accessTokenHash := jwt.New(jwt.SigningMethodHS256)
 	accessTokenHash.Claims = &types.AuthTokenClaim{
@@ -18,36 +18,25 @@ func GenerateAccessToken(validUser *users.User) (*types.AuthToken, error) {
 			ExpiresAt: accessTokenExpiresAt,
 		},
 		types.UserToken{
-			AccountID: validUser.AccountID,
-			ID:        validUser.Id,
-			Username:  validUser.Username,
-			FirstName: validUser.FirstName,
-			LastName:  validUser.LastName,
-			Avatar:    validUser.Avatar,
-			AccountStatus: types.AccountStatus{
-				AccountID: validUser.AccountID,
-				Name:      validUser.Account.Name,
-				Status:    validUser.Account.Status,
-				Plan: types.Plan{
-					PlanID:      validUser.Account.Plan.PlanID,
-					Name:        validUser.Account.Plan.Name,
-					PeriodEndAt: validUser.Account.Plan.PeriodEndAt,
-					Active:      validUser.Account.Plan.Active,
-					Require:     validUser.Account.Plan.Require,
-				},
+			ID:        user.Id,
+			UserType:  user.UserType,
+			AccountID: user.AccountID,
+			Username:  user.Username,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			Avatar:    user.Avatar,
+			Plan: types.Plan{
+				PlanID:      user.Plan.PlanID,
+				Name:        user.Plan.Name,
+				PeriodEndAt: user.Plan.PeriodEndAt,
+				Active:      user.Plan.Active,
+				Require:     user.Plan.Require,
 			},
-			Rolename:       validUser.Role.Name,
-			RolePersist:    validUser.Role.Persist,
-			RolePredefined: validUser.Role.Predefined,
-			Email:          validUser.Email,
-			CoBrowsing:     validUser.Role.CoBrowsing,
-			ScreenShare:    validUser.Role.ScreenShare,
-			AudioDownload:  validUser.Role.AudioDownload,
-			VideoDownload:  validUser.Role.VideoDownload,
-			Create:         PermissionsRPCToCode(validUser.Role.Create),
-			Update:         PermissionsRPCToCode(validUser.Role.Update),
-			Read:           PermissionsRPCToCode(validUser.Role.Read),
-			Delete:         PermissionsRPCToCode(validUser.Role.Delete),
+			Permissions: types.Permissions{
+				WriteComment: user.Permissions.WriteComment,
+				Live:         user.Permissions.Live,
+			},
 		},
 	}
 	accessToken, err := accessTokenHash.SignedString([]byte(env.Settings.JWTAccessTokenSecret))
@@ -87,35 +76,6 @@ func GenerateRefreshToken(accountID string, agentID string) (*types.AuthToken, e
 	token := &types.AuthToken{
 		Token:     refreshToken,
 		ExpiresIn: refreshTokenExpiresAt,
-	}
-
-	return token, nil
-
-}
-
-func GenerateVisitorToken(accountID string, visitorID string) (*types.AuthToken, error) {
-	visitorTokenExpiresAt := time.Now().Add(time.Second * time.Duration(env.Settings.AccessTokenLife)).Unix()
-	visitorTokenHash := jwt.New(jwt.SigningMethodHS256)
-	visitorTokenHash.Claims = &types.AuthTokenClaim{
-		&jwt.StandardClaims{
-			ExpiresAt: visitorTokenExpiresAt,
-		},
-		types.UserToken{
-			AccountID: accountID,
-			ID:        visitorID,
-			IsAgent:   false,
-		},
-	}
-	visitorToken, err := visitorTokenHash.SignedString([]byte(env.Settings.JWTAccessTokenSecret))
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	token := &types.AuthToken{
-		Token:     visitorToken,
-		ExpiresIn: visitorTokenExpiresAt,
-		TokenType: env.Settings.TokenType,
 	}
 
 	return token, nil

@@ -63,8 +63,8 @@ func Start() {
 	s := server.GetInstance(userServiceClient, db)
 
 	router.HandleFunc("/login", cors(s.LoginHandler))
-	//router.HandleFunc("/token-health", cors(s.TokenHealthHandler))
-	//router.HandleFunc("/refresh", cors(s.RefreshTokenHandler))
+	router.HandleFunc("/token-health", cors(s.TokenHealthHandler))
+	router.HandleFunc("/refresh", cors(s.RefreshTokenHandler))
 	router.HandleFunc("/logout", cors(s.LogoutHandler))
 	promHandler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
 	router.HandleFunc("/metrics", cors(monitoring_middleware(promHandler)))

@@ -9,12 +9,8 @@ type User struct {
 }
 
 type Permissions struct {
-	Bots     bool `json:"bots"`
-	Triggers bool `json:"triggers"`
-	Tickets  bool `json:"tickets"`
-	Profiles bool `json:"profiles"`
-	Kbas     bool `json:"kbas"`
-	Settings bool `json:"settings"`
+	WriteComment bool `json:"writeComment"`
+	Live         bool `json:"live"`
 }
 
 type Plan struct {
@@ -25,12 +21,6 @@ type Plan struct {
 	Require     string `json:"require"`
 }
 
-type AccountStatus struct {
-	AccountID string `json:"accountID"`
-	Name      string `json:"name"`
-	Status    string `json:"status"`
-	Plan      Plan   `json:"plan"`
-}
 type Message struct {
 	Message   string `json:"message"`
 	ErrorCode int    `json:"code"`

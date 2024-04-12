@@ -26,6 +26,7 @@ type AuthServiceClient interface {
 	GenerateAccessToken(ctx context.Context, in *GenerateAccessTokenRequest, opts ...grpc.CallOption) (*GenerateAccessTokenResponse, error)
 	GenerateRefreshToken(ctx context.Context, in *GenerateRefreshTokenRequest, opts ...grpc.CallOption) (*GenerateRefreshTokenResponse, error)
 	GenerateVisitorToken(ctx context.Context, in *GenerateVisitorTokenRequest, opts ...grpc.CallOption) (*GenerateVisitorTokenResponse, error)
+	Signup(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error)
 }
 
 type authServiceClient struct {
@@ -72,6 +73,15 @@ func (c *authServiceClient) GenerateVisitorToken(ctx context.Context, in *Genera
 	return out, nil
 }
 
+func (c *authServiceClient) Signup(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error) {
+	out := new(SignUpResponse)
+	err := c.cc.Invoke(ctx, "/settings.AuthService/Signup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type AuthServiceServer interface {
 	GenerateAccessToken(context.Context, *GenerateAccessTokenRequest) (*GenerateAccessTokenResponse, error)
 	GenerateRefreshToken(context.Context, *GenerateRefreshTokenRequest) (*GenerateRefreshTokenResponse, error)
 	GenerateVisitorToken(context.Context, *GenerateVisitorTokenRequest) (*GenerateVisitorTokenResponse, error)
+	Signup(context.Context, *SignUpRequest) (*SignUpResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedAuthServiceServer) GenerateRefreshToken(context.Context, *Gen
 }
 func (UnimplementedAuthServiceServer) GenerateVisitorToken(context.Context, *GenerateVisitorTokenRequest) (*GenerateVisitorTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateVisitorToken not implemented")
+}
+func (UnimplementedAuthServiceServer) Signup(context.Context, *SignUpRequest) (*SignUpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Signup not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -184,6 +198,24 @@ func _AuthService_GenerateVisitorToken_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_Signup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignUpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).Signup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/settings.AuthService/Signup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).Signup(ctx, req.(*SignUpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateVisitorToken",
 			Handler:    _AuthService_GenerateVisitorToken_Handler,
+		},
+		{
+			MethodName: "Signup",
+			Handler:    _AuthService_Signup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -18,6 +18,8 @@ type Config struct {
 	AllowedDomains        []string
 	UserService           *UserServiceConfig
 	Database              *DatabaseConfig
+	SignupLinkLife        int
+	JWTSignupTokenSecret  string
 }
 
 type UserServiceConfig struct {
@@ -76,6 +78,8 @@ func init() {
 		RefreshTokenLife:      viper.GetInt64("REFRESH_TOKEN_LIFE"),
 		MaxLoginAttemps:       int8(viper.GetInt("MAX_LOGIN_ATTEMPT")),
 		LoginAgainAllowLife:   viper.GetInt64("LOGIN_AGAIN_ALLOW_LIFE"),
+		SignupLinkLife:        viper.GetInt("SIGNUP_LINK_LIFE"),
+		JWTSignupTokenSecret:  viper.GetString("JWT_SIGNUP_TOKEN_SECRET"),
 		Database: &DatabaseConfig{
 			PSQLConfig{
 				Host:     viper.GetString("POSTGRES_HOST"),
