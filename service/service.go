@@ -9,10 +9,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/shirou/gopsutil/cpu"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"runtime"
 )
 
@@ -24,7 +27,7 @@ var (
 	cpuPercentage  = prometheus.NewGauge(prometheus.GaugeOpts{Name: "cpu_percentage", Help: "cpu percentage"})
 )
 
-func monitoring_middleware(originalHandler http.Handler) http.HandlerFunc {
+func monitoringMiddleware(originalHandler http.Handler) http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -38,7 +41,26 @@ func monitoring_middleware(originalHandler http.Handler) http.HandlerFunc {
 	})
 }
 
+func loggerInit() *zap.Logger {
+	encoderConfig := zap.NewDevelopmentEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+
+	core := zapcore.NewCore(
+		zapcore.NewJSONEncoder(encoderConfig),
+		zapcore.AddSync(os.Stdout),
+		zap.NewAtomicLevelAt(zap.InfoLevel),
+	)
+
+	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(0))
+	return logger
+}
+
 func Start() {
+
+	logger := loggerInit()
+	defer logger.Sync()
 
 	registry.MustRegister(requestCounter, memoryUsage, cpuPercentage, goRoutineNum)
 	router := mux.NewRouter()
@@ -57,17 +79,15 @@ func Start() {
 		log.Fatal("Connection to agent domain service faild ", err)
 	}
 
-	log.Printf("CONNECTED TO USER SERVICE")
-
 	userServiceClient := users.NewUserServiceClient(userConnectionService)
-	s := server.GetInstance(userServiceClient, db)
+	s := server.GetInstance(userServiceClient, db, logger)
 
 	router.HandleFunc("/login", cors(s.LoginHandler))
+	router.HandleFunc("/teacher-login", cors(s.LoginTeacherHandler))
 	router.HandleFunc("/token-health", cors(s.TokenHealthHandler))
-	router.HandleFunc("/refresh", cors(s.RefreshTokenHandler))
 	router.HandleFunc("/logout", cors(s.LogoutHandler))
 	promHandler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
-	router.HandleFunc("/metrics", cors(monitoring_middleware(promHandler)))
+	router.HandleFunc("/metrics", cors(monitoringMiddleware(promHandler)))
 	log.Println("Auth API listen at :" + env.Settings.HTTPPort)
 	go func() {
 		log.Fatal(http.ListenAndServe(":"+env.Settings.HTTPPort, router))

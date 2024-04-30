@@ -11,14 +11,7 @@ type User struct {
 type Permissions struct {
 	WriteComment bool `json:"writeComment"`
 	Live         bool `json:"live"`
-}
-
-type Plan struct {
-	PlanID      string `json:"planID"`
-	Name        string `json:"name"`
-	PeriodEndAt int64  `json:"periodEndAt"`
-	Active      bool   `json:"active"`
-	Require     string `json:"require"`
+	Upload       bool `json:"upload"`
 }
 
 type Message struct {

@@ -15,7 +15,6 @@ type AuthTokenClaim struct {
 
 type RefreshToken struct {
 	AccountID string `json:"accountID"`
-	AgentID   string `json:"agentID"`
 }
 
 type RefreshTokenClaim struct {
@@ -32,7 +31,6 @@ type UserToken struct {
 	LastName    string      `json:"lastname"`
 	Email       string      `json:"email"`
 	Avatar      string      `json:"avatar"`
-	Plan        Plan        `json:"plan"`
 	Permissions Permissions `json:"permissions"`
 }
 

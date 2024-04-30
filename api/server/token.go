@@ -1,137 +1,15 @@
 package server
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/les-cours/auth-service/env"
+	"github.com/les-cours/auth-service/types"
 	"log"
 	"net/http"
 	"strings"
-	"time"
-
-	"github.com/dgrijalva/jwt-go"
-	"github.com/les-cours/auth-service/api/users"
-	"github.com/les-cours/auth-service/env"
-	"github.com/les-cours/auth-service/types"
-	"github.com/les-cours/auth-service/utils"
-	ctx "golang.org/x/net/context"
 )
-
-func (s *Server) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(types.Message{
-			Message: "Method not allowed",
-		})
-		return
-	}
-
-	cookie, err := r.Cookie("refreshToken")
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(types.Error{
-			types.Message{
-				Message: "Bad request",
-			},
-		})
-		return
-	}
-
-	refreshToken := cookie.Value
-	user := types.RefreshTokenClaim{}
-	_, err = jwt.ParseWithClaims(refreshToken, &user, func(token *jwt.Token) (interface{}, error) {
-		return []byte(env.Settings.JWTRefreshTokenSecret), nil
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refreshToken",
-			Value:    "",
-			MaxAge:   -1,
-			Secure:   true,
-			SameSite: http.SameSiteNoneMode,
-		})
-		json.NewEncoder(w).Encode(types.Error{
-			types.Message{
-				Message: "You are not authorized",
-			},
-		})
-		return
-	}
-
-	validUser, err := s.userClient.GetUserByID(ctx.Background(), &users.GetUserByIDRequest{
-		AccountID: user.AccountID,
-	})
-	if err != nil && err == sql.ErrNoRows {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(types.Error{
-			types.Message{
-				Message: "Something goes wrong with the cookie",
-			},
-		})
-		return
-	}
-
-	if err != nil {
-		log.Printf("Can't getUser: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Error{
-			types.Message{
-				Message: "Server failed to process your request, please try again",
-			},
-		})
-		return
-	}
-
-	accessToken, err := utils.GenerateAccessToken(validUser)
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Error{
-			types.Message{
-				Message: "Server failed to process your request please try again",
-			},
-		})
-		return
-	}
-
-	refreshTokenExpiresAt := time.Now().Add(time.Second * time.Duration(env.Settings.RefreshTokenLife)).Unix()
-	refreshTokenHash := jwt.New(jwt.SigningMethodHS512)
-	refreshTokenHash.Claims = &types.RefreshTokenClaim{
-		&jwt.StandardClaims{
-			ExpiresAt: refreshTokenExpiresAt,
-		},
-		types.RefreshToken{
-			AccountID: validUser.AccountID,
-			AgentID:   validUser.Id,
-		},
-	}
-	newRefreshToken, err := refreshTokenHash.SignedString([]byte(env.Settings.JWTRefreshTokenSecret))
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(types.Message{
-			Message: "Server failed to process your request please try again",
-		})
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    newRefreshToken,
-		Expires:  time.Now().Add(time.Second * time.Duration(env.Settings.RefreshTokenLife)),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	})
-	json.NewEncoder(w).Encode(types.Object{
-		"user": types.AuthToken{
-			Token:     accessToken.Token,
-			TokenType: accessToken.TokenType,
-			ExpiresIn: accessToken.ExpiresIn,
-		},
-	})
-}
 
 func (s *Server) TokenHealthHandler(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {

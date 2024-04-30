@@ -12,19 +12,15 @@ message User {
   string firstName = 4;
   string lastName = 5;
   string email = 6;
-  Plan plan = 8;
-  repeated string allowedIPS = 9;
-  string department = 10;
   string avatar = 11;
-  Permissions Permissions = 12;
   string userType = 13;
+  Permissions Permissions = 12;
 }
 
 message  Permissions {
-  int32 id = 1;
   bool writeComment =2;
   bool live =3;
-  bool settings =4;
+  bool upload =4;
 }
 
 message Plan {
@@ -39,10 +35,12 @@ message Plan {
 message GetUserRequest {
   string username = 1;
   string password = 2;
+  bool isTeacher = 3;
 }
 
 message GetUserByIDRequest {
   string accountID = 1;
+  string userRole = 2;
 }
 
 service UserService {
