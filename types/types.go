@@ -9,9 +9,9 @@ type User struct {
 }
 
 type Permissions struct {
-	WriteComment bool `json:"writeComment"`
-	Live         bool `json:"live"`
-	Upload       bool `json:"upload"`
+	USER     bool `json:"user"`
+	LEARNING bool `json:"learning"`
+	ORGS     bool `json:"orgs"`
 }
 
 type Message struct {

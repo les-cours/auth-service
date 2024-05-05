@@ -6,30 +6,28 @@ message Empty {}
 
 
 message User {
-  string id = 1;
-  string accountID= 2;
-  string username = 3;
-  string firstName = 4;
-  string lastName = 5;
-  string email = 6;
-  string avatar = 11;
-  string userType = 13;
-  Permissions Permissions = 12;
+    string id = 1;
+    string accountID= 2;
+    string username = 3;
+    string firstName = 4;
+    string lastName = 5;
+    string email = 6;
+    string avatar = 11;
+    string userType = 13;
+    Permissions CREATE = 14;
+    Permissions READ = 15;
+    Permissions UPDATE = 16;
+    Permissions DELETE = 17;
 }
 
 message  Permissions {
-  bool writeComment =2;
-  bool live =3;
-  bool upload =4;
+
+    bool orgs = 3;
+    bool learning = 4;
+    bool users = 5;
+
 }
 
-message Plan {
-  string planID = 1;
-  string name = 2;
-  int64 periodEndAt = 3;
-  bool active = 4;
-  string require = 5;
-}
 
 
 message GetUserRequest {
