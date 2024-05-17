@@ -10,12 +10,12 @@ import (
 	"github.com/les-cours/auth-service/api/users"
 )
 
+var AccessTokenExpiresAt = time.Now().Add(time.Minute * 60 * 24 * 360).Unix() // time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
 func GenerateAccessToken(user *users.User) (*types.AuthToken, error) {
-	accessTokenExpiresAt := time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
 	accessTokenHash := jwt.New(jwt.SigningMethodHS256)
 	accessTokenHash.Claims = &types.AuthTokenClaim{
 		&jwt.StandardClaims{
-			ExpiresAt: accessTokenExpiresAt,
+			ExpiresAt: AccessTokenExpiresAt,
 		},
 		types.UserToken{
 			ID:        user.Id,
@@ -36,7 +36,7 @@ func GenerateAccessToken(user *users.User) (*types.AuthToken, error) {
 
 	token := &types.AuthToken{
 		Token:     accessToken,
-		ExpiresIn: accessTokenExpiresAt,
+		ExpiresIn: AccessTokenExpiresAt,
 		TokenType: env.Settings.TokenType,
 	}
 
@@ -44,11 +44,11 @@ func GenerateAccessToken(user *users.User) (*types.AuthToken, error) {
 }
 
 func GenerateTeacherAccessToken(user *users.User) (*types.AuthToken, error) {
-	accessTokenExpiresAt := time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
+
 	accessTokenHash := jwt.New(jwt.SigningMethodHS256)
 	accessTokenHash.Claims = &types.AuthTokenClaim{
 		&jwt.StandardClaims{
-			ExpiresAt: accessTokenExpiresAt,
+			ExpiresAt: AccessTokenExpiresAt,
 		},
 		types.UserToken{
 			ID:        user.Id,
@@ -89,7 +89,7 @@ func GenerateTeacherAccessToken(user *users.User) (*types.AuthToken, error) {
 
 	token := &types.AuthToken{
 		Token:     accessToken,
-		ExpiresIn: accessTokenExpiresAt,
+		ExpiresIn: AccessTokenExpiresAt,
 		TokenType: env.Settings.TokenType,
 	}
 
@@ -97,11 +97,11 @@ func GenerateTeacherAccessToken(user *users.User) (*types.AuthToken, error) {
 }
 
 //func GenerateAdminAccessToken(user *users.User) (*types.AuthToken, error) {
-//	accessTokenExpiresAt := time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
+//	AccessTokenExpiresAt := time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
 //	accessTokenHash := jwt.New(jwt.SigningMethodHS256)
 //	accessTokenHash.Claims = &types.AuthTokenClaim{
 //		&jwt.StandardClaims{
-//			ExpiresAt: accessTokenExpiresAt,
+//			ExpiresAt: AccessTokenExpiresAt,
 //		},
 //		types.UserToken{
 //			ID:        user.Id,
@@ -142,7 +142,7 @@ func GenerateTeacherAccessToken(user *users.User) (*types.AuthToken, error) {
 //
 //	token := &types.AuthToken{
 //		Token:     accessToken,
-//		ExpiresIn: accessTokenExpiresAt,
+//		ExpiresIn: AccessTokenExpiresAt,
 //		TokenType: env.Settings.TokenType,
 //	}
 //
