@@ -109,7 +109,14 @@ func (s *Server) LoginHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server) LoginTeacherHandler(w http.ResponseWriter, req *http.Request) {
-	log.Printf("Processing Login ... ")
+	log.Printf("Processing Login ... %v", req.Method)
+
+	if req.Method == "OPTIONS" {
+		w.WriteHeader(200)
+
+		return
+	}
+
 	if req.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(types.Error{
