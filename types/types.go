@@ -12,6 +12,7 @@ type Permissions struct {
 	USER     bool `json:"user"`
 	LEARNING bool `json:"learning"`
 	ORGS     bool `json:"orgs"`
+	PAYMENT  bool `json:"payment"`
 }
 
 type Message struct {

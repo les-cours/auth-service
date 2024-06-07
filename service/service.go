@@ -84,6 +84,7 @@ func Start() {
 
 	router.HandleFunc("/login", cors(s.LoginHandler))
 	router.HandleFunc("/teacher-login", cors(s.LoginTeacherHandler))
+	router.HandleFunc("/login-admin", cors(s.LoginAdminHandler))
 	router.HandleFunc("/token-health", cors(s.TokenHealthHandler))
 	router.HandleFunc("/logout", cors(s.LogoutHandler))
 	promHandler := promhttp.HandlerFor(registry, promhttp.HandlerOpts{})
