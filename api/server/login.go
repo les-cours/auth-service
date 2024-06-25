@@ -30,6 +30,7 @@ func (s *Server) LoginHandler(w http.ResponseWriter, req *http.Request) {
 
 	switch {
 	case err != nil:
+		s.Logger.Error(err.Error())
 		{
 			w.WriteHeader(http.StatusUnauthorized)
 			json.NewEncoder(w).Encode(types.Error{
@@ -80,7 +81,14 @@ func (s *Server) LoginHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	accessToken, err := utils.GenerateAccessToken(validUser)
+	var grad string
+	var gender string
+	err = s.DB.QueryRow(`SELECT grade_id, gender FROM students where student_id  = $1;`, validUser.Id).Scan(&grad, &gender)
+	if err != nil {
+		s.Logger.Error(err.Error())
+	}
+
+	accessToken, err := utils.GenerateAccessToken(validUser, grad, gender)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(types.Error{

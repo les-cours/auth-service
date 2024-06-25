@@ -25,7 +25,13 @@ func (s *Server) Signup(ctx context.Context, in *auth.SignUpRequest) (*auth.Sign
 	case "teacher":
 		token, err = utils.GenerateTeacherAccessToken(validUser)
 	default:
-		token, err = utils.GenerateAccessToken(validUser)
+		var grad string
+		var gender string
+		err = s.DB.QueryRow(`SELECT grade_id, gender FROM students where student_id  = $1;`, validUser.Id).Scan(&grad, &gender)
+		if err != nil {
+			s.Logger.Error(err.Error())
+		}
+		token, err = utils.GenerateAccessToken(validUser, grad, gender)
 	}
 
 	if err != nil {

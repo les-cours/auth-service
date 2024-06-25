@@ -11,21 +11,25 @@ import (
 )
 
 var AccessTokenExpiresAt = time.Now().Add(time.Minute * 60 * 24 * 360).Unix() // time.Now().Add(time.Minute * time.Duration(env.Settings.AccessTokenLife)).Unix()
-func GenerateAccessToken(user *users.User) (*types.AuthToken, error) {
+func GenerateAccessToken(user *users.User, grad, gender string) (*types.AuthToken, error) {
+
 	accessTokenHash := jwt.New(jwt.SigningMethodHS256)
 	accessTokenHash.Claims = &types.AuthTokenClaim{
 		&jwt.StandardClaims{
 			ExpiresAt: AccessTokenExpiresAt,
 		},
 		types.UserToken{
-			ID:        user.Id,
-			UserType:  user.UserType,
-			AccountID: user.AccountID,
-			Username:  user.Username,
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Email:     user.Email,
-			Avatar:    user.Avatar,
+			StandardClaims: jwt.StandardClaims{},
+			ID:             user.Id,
+			UserType:       user.UserType,
+			AccountID:      user.AccountID,
+			Username:       user.Username,
+			FirstName:      user.FirstName,
+			LastName:       user.LastName,
+			Email:          user.Email,
+			Avatar:         user.Avatar,
+			Sex:            gender,
+			GradID:         grad,
 		},
 	}
 	accessToken, err := accessTokenHash.SignedString([]byte(env.Settings.JWTAccessTokenSecret))
